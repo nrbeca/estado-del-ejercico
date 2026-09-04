@@ -202,7 +202,7 @@ def enriquecer_con_catalogos(df: pd.DataFrame) -> pd.DataFrame:
 
 def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: int) -> tuple[pd.DataFrame, list[str]]:
     """Agrega columnas '<Familia> (Anual)' y '<Familia> (Al <mes>)' por cada
-    familia de importes disponible, más 'Disponible (Anual)'/'Disponible (Al <mes>)'.
+    familia de importes disponible, más 'Disponible (Anual)'/'Disponible (A <mes>)'.
     Regresa el df enriquecido y la lista de columnas de valor calculadas (en orden lógico)."""
     familias = FAMILIAS_SICOP if fuente == "SICOP" else FAMILIAS_MAP
     claves = CLAVES_SICOP if fuente == "SICOP" else CLAVES_MAP
