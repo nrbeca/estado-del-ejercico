@@ -289,9 +289,9 @@ def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: 
     # formato estándar de Estado del Ejercicio OREF usa Ejercido solo.
     if fuente == "SICOP" and all(f"{n} (Anual)" in df.columns for n in ["Ejercido", "Devengado", "Ejercido en trámite"]):
         df["Ejercido real (Anual)"] = df["Ejercido (Anual)"] + df["Devengado (Anual)"] + df["Ejercido en trámite (Anual)"]
-        df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al periodo {mes_label})"]
-                                                  + df[f"Ejercido en trámite (Al periodo {mes_label})"])
-        columnas_valor += ["Ejercido real (Anual)", f"Ejercido real (Al periodo {mes_label})"]
+        df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al {mes_label})"]
+                                                  + df[f"Ejercido en trámite (Al {mes_label})"])
+        columnas_valor += ["Ejercido real (Anual)", f"Ejercido real (Al {mes_label})"]
 
     return df, columnas_valor
 
@@ -511,7 +511,7 @@ def fecha_desde_nombre_archivo(nombre: str) -> str | None:
 # ---------------------------------------------------------------------------
 def main():
     st.set_page_config(page_title="Tabla dinámica MAP / SICOP", layout="wide")
-    st.title("Constructor de reportes — MAP / SICOP")
+    st.title(" Constructor de reportes — MAP / SICOP")
     st.caption(
         "Integra reportes MAP y SICOP en un solo lugar, arma cualquier reporte "
         "tipo tabla dinámica y descárgalo con el formato del Estado del Ejercicio."
@@ -564,7 +564,7 @@ def main():
     titulo_default = (f"Estado del Ejercicio al {fecha_archivo}" if fecha_archivo
                        else f"Estado del Ejercicio al {hoy.day} de {NOMBRES_MES[hoy.month-1]} de {hoy.year}")
 
-    tab_estandar, tab_personalizado = st.tabs([" Reporte estándar (formato original)", " Reporte personalizado"])
+    tab_estandar, tab_personalizado = st.tabs([" Reporte estándar (formato original)", "🛠️ Reporte personalizado"])
 
     # -----------------------------------------------------------------
     # Reporte estándar: siempre sale con el formato de formato_estado_del_ejercicio.xlsx
