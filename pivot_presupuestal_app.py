@@ -78,6 +78,8 @@ FAMILIAS_SICOP = {
     "COMPROMETIDO": (["COEN", "COFE", "COMR", "COAB", "COMY", "COJN", "COJL", "COAG", "COSE", "COOC", "CONO", "CODI"], "COMPROMETIDO"),
     "EJERCIDO": (["EJEN", "EJFE", "EJMR", "EJAB", "EJMY", "EJJN", "EJJL", "EJAG", "EJSE", "EJOC", "EJNO", "EJDI"], "EJERCIDO"),
     "DEVENGADO": (["DVEN", "DVFE", "DVMR", "DVAB", "DVMY", "DVJN", "DVJL", "DVAG", "DVSE", "DVOC", "DVNO", "DVDI"], "DEVENGADO"),
+    "EJERCIDO_TRAMITE": (["EJTREN", "EJTRFE", "EJTRMR", "EJTRAB", "EJTRMY", "EJTRJN", "EJTRJL", "EJTRAG",
+                          "EJTRSE", "EJTROC", "EJTRNO", "EJTRDI"], "EJERCIDO_TRAMITE"),
 }
 CLAVES_SICOP = {"modificado": "MODIFICADO_AUTORIZADO", "ejercido": "EJERCIDO", "comprometido": "COMPROMETIDO"}
 
@@ -96,6 +98,7 @@ NOMBRES_FAMILIA = {
     "COMPROMETIDO": "Comprometido",
     "EJERCIDO": "Ejercido", "EJE": "Ejercido",
     "DEVENGADO": "Devengado",
+    "EJERCIDO_TRAMITE": "Ejercido en trámite",
     "CONG": "Congelado", "DESCONG": "Descongelado",
 }
 
@@ -103,6 +106,35 @@ FUENTES = {
     "MAP": "Módulo de Adecuaciones Presupuestarias (MAP)",
     "SICOP": "Sistema de Contabilidad y Presupuesto (SICOP)",
 }
+
+# Normalización de Unidad Responsable — tomada tal cual de MAPEO_UR_2026_BASE y
+# FUSION_URS_2026 en nrbeca/nuevo/config.py, para que claves legadas o alternas
+# se agrupen bajo el código vigente antes de buscar el nombre.
+MAPEO_UR_BASE = {
+    "G00": "811", "108": "810", "113": "250", "121": "260", "122": "261", "123": "262",
+    "124": "263", "125": "264", "126": "265", "127": "266", "128": "267", "129": "268",
+    "130": "269", "131": "270", "132": "271", "133": "272", "134": "273", "135": "274",
+    "136": "275", "137": "276", "138": "277", "139": "278", "140": "279", "141": "280",
+    "142": "281", "143": "282", "144": "283", "145": "284", "146": "285", "147": "286",
+    "148": "287", "149": "288", "150": "289", "151": "290", "152": "291", "153": "292",
+    "215": "220", "300": "225", "310": "226", "700": "227", "600": "230", "612": "231",
+    "312": "232", "315": "233", "400": "235", "311": "237", "314": "245",
+}
+FUSION_URS = {
+    "810": "119", "812": "119", "800": "120", "811": "120", "235": "250", "236": "253",
+    "237": "253", "225": "900", "245": "910", "241": "911", "246": "912", "247": "912",
+    "230": "920", "226": "921", "227": "922", "231": "923", "232": "924",
+}
+
+
+def normalizar_ur(codigo) -> str:
+    """Aplica el mismo encadenamiento MAPEO_UR_2026_BASE -> FUSION_URS_2026 que
+    usa tu Dashboard de Austeridad, para que un código legado o alterno caiga
+    bajo el mismo código vigente que usa el catálogo de nombres."""
+    clave = str(codigo).strip()
+    clave = MAPEO_UR_BASE.get(clave, clave)
+    clave = FUSION_URS.get(clave, clave)
+    return clave
 
 
 # ---------------------------------------------------------------------------
@@ -160,16 +192,21 @@ def cargar_crudo(archivo_bytes: bytes, nombre_archivo: str, fuente: str) -> pd.D
             df["Partida"] = (df["CAPITULO"] * 10000 + df["CONCEPTO"] * 1000
                               + df["PARTIDA_GENERICA"] * 100 + df["PARTIDA_ESPECIFICA"])
         if "ID_UNIDAD" in df.columns:
-            df["Unidad Responsable"] = df["ID_UNIDAD"].astype(str).str.strip()
+            df["Unidad Responsable (código en la base)"] = df["ID_UNIDAD"].astype(str).str.strip()
+            df["Unidad Responsable"] = df["Unidad Responsable (código en la base)"].apply(normalizar_ur)
         if "PROGRAMA_PRESUPUESTARIO" in df.columns:
             df["Programa"] = df["PROGRAMA_PRESUPUESTARIO"].astype(str).str.strip()
     elif fuente == "MAP":
         if "PARTIDA" in df.columns:
             df["Partida"] = pd.to_numeric(df["PARTIDA"], errors="coerce")
         if "UNIDAD" in df.columns:
-            df["Unidad Responsable"] = df["UNIDAD"].astype(str).str.strip()
+            df["Unidad Responsable (código en la base)"] = df["UNIDAD"].astype(str).str.strip()
+            df["Unidad Responsable"] = df["Unidad Responsable (código en la base)"].apply(normalizar_ur)
         if "PROGRAMA" in df.columns:
             df["Programa"] = df["PROGRAMA"].astype(str).str.strip()
+
+    if "Partida" in df.columns:
+        df["Capitulo"] = (pd.to_numeric(df["Partida"], errors="coerce") // 10000).astype("Int64")
 
     return df
 
@@ -186,6 +223,7 @@ def enriquecer_con_catalogos(df: pd.DataFrame) -> pd.DataFrame:
     cat_ur = cargar_catalogo("unidades.csv", "codigo_ur", "nombre_ur")
     cat_partidas = cargar_catalogo("partidas.csv", "partida", "nombre_partida")
     cat_programas = cargar_catalogo("programas.csv", "programa", "nombre_programa")
+    cat_capitulos = cargar_catalogo("capitulos.csv", "capitulo", "nombre_capitulo")
 
     nuevas = {}
     if "Unidad Responsable" in df.columns:
@@ -197,12 +235,15 @@ def enriquecer_con_catalogos(df: pd.DataFrame) -> pd.DataFrame:
     if "Programa" in df.columns:
         nuevas["Nombre Programa"] = df["Programa"].apply(lambda x: solo_nombre(x, cat_programas))
         nuevas["Programa (nombre)"] = df["Programa"].apply(lambda x: etiqueta_con_nombre(x, cat_programas))
+    if "Capitulo" in df.columns:
+        nuevas["Nombre Capítulo"] = df["Capitulo"].apply(lambda x: solo_nombre(x, cat_capitulos))
+        nuevas["Capítulo (nombre)"] = df["Capitulo"].apply(lambda x: etiqueta_con_nombre(x, cat_capitulos))
     return pd.concat([df, pd.DataFrame(nuevas, index=df.index)], axis=1)
 
 
 def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: int) -> tuple[pd.DataFrame, list[str]]:
     """Agrega columnas '<Familia> (Anual)' y '<Familia> (Al <mes>)' por cada
-    familia de importes disponible, más 'Disponible (Anual)'/'Disponible (A <mes>)'.
+    familia de importes disponible, más 'Disponible (Anual)'/'Disponible (Al <mes>)'.
     Regresa el df enriquecido y la lista de columnas de valor calculadas (en orden lógico)."""
     familias = FAMILIAS_SICOP if fuente == "SICOP" else FAMILIAS_MAP
     claves = CLAVES_SICOP if fuente == "SICOP" else CLAVES_MAP
@@ -241,6 +282,16 @@ def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: 
         df["Disponible (Anual)"] = df[col_mod_anual] - df[col_eje_anual] - com_anual
         df["Disponible (Al " + mes_label + ")"] = df[col_mod_periodo] - df[col_eje_anual] - com_periodo
         columnas_valor += ["Disponible (Anual)", f"Disponible (Al {mes_label})"]
+
+    # "Ejercido real" (solo SICOP) = Ejercido + Devengado + Ejercido en trámite,
+    # tal como lo define tu Dashboard de Presupuesto (EJERCIDO_REAL en
+    # sicop_processor.py). Se agrega aparte, sin tocar "Ejercido", porque el
+    # formato estándar de Estado del Ejercicio OREF usa Ejercido solo.
+    if fuente == "SICOP" and all(f"{n} (Anual)" in df.columns for n in ["Ejercido", "Devengado", "Ejercido en trámite"]):
+        df["Ejercido real (Anual)"] = df["Ejercido (Anual)"] + df["Devengado (Anual)"] + df["Ejercido en trámite (Anual)"]
+        df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al {mes_label})"]
+                                                  + df[f"Ejercido en trámite (Al {mes_label})"])
+        columnas_valor += ["Ejercido real (Anual)", f"Ejercido real (Al {mes_label})"]
 
     return df, columnas_valor
 
@@ -307,15 +358,19 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
 
 
 def aplicar_depuracion_sicop(df: pd.DataFrame) -> pd.DataFrame:
-    """Reglas que corrigieron discrepancias del Estado del Ejercicio en SICOP:
-    excluir capítulo 1000 (servicios personales), capítulo 6000 (inversión) y
-    la partida 39801. Revisa que apliquen a lo que quieres reportar antes de
-    activarlas — no siempre corresponden a todos los reportes."""
+    """Reglas confirmadas en sicop_processor.py (nrbeca/nuevo) para el
+    Estado del Ejercicio: excluir capítulo 1000 (servicios personales),
+    la partida 39801, y CONTROL_OPERATIVO entre 60 y 69. Revisa que
+    correspondan al reporte que quieres armar antes de activarlas."""
     dff = df.copy()
-    if "CAPITULO" in dff.columns:
-        dff = dff[~dff["CAPITULO"].isin([1, 6])]
+    col_cap = "Capitulo" if "Capitulo" in dff.columns else ("CAPITULO" if "CAPITULO" in dff.columns else None)
+    if col_cap:
+        dff = dff[dff[col_cap] != 1]
     if "Partida" in dff.columns:
         dff = dff[dff["Partida"] != 39801]
+    if "CONTROL_OPERATIVO" in dff.columns:
+        co = pd.to_numeric(dff["CONTROL_OPERATIVO"], errors="coerce")
+        dff = dff[~co.between(60, 69)]
     return dff
 
 
@@ -456,7 +511,7 @@ def fecha_desde_nombre_archivo(nombre: str) -> str | None:
 # ---------------------------------------------------------------------------
 def main():
     st.set_page_config(page_title="Tabla dinámica MAP / SICOP", layout="wide")
-    st.title(" Constructor de reportes — MAP / SICOP")
+    st.title("Constructor de reportes — MAP / SICOP")
     st.caption(
         "Integra reportes MAP y SICOP en un solo lugar, arma cualquier reporte "
         "tipo tabla dinámica y descárgalo con el formato del Estado del Ejercicio."
@@ -478,9 +533,9 @@ def main():
         depurar_sicop = False
         if fuente == "SICOP":
             depurar_sicop = st.checkbox(
-                "Excluir capítulo 1000, 6000 y partida 39801",
+                "Excluir capítulo 1000, partida 39801 y CONTROL_OPERATIVO 60-69",
                 value=False,
-                help="Reglas que corrigieron antes discrepancias del Estado del Ejercicio. Revisa si aplican a tu reporte.",
+                help="Reglas confirmadas en tu procesador SICOP (nrbeca/nuevo). Revisa si aplican al reporte que quieres armar.",
             )
 
     if not archivo:
@@ -503,7 +558,7 @@ def main():
     columnas_no_valor = [c for c in df.columns if c not in columnas_familia]
     columnas_num_extra = [c for c in columnas_no_valor if pd.api.types.is_numeric_dtype(df[c])]
     columnas_cat = [c for c in columnas_no_valor if c not in columnas_num_extra]
-    campos_sugeridos = [c for c in ["Unidad Responsable (nombre)", "Partida (nombre)", "Programa (nombre)"] if c in columnas_cat]
+    campos_sugeridos = [c for c in ["Unidad Responsable (nombre)", "Partida (nombre)", "Programa (nombre)", "Capítulo (nombre)"] if c in columnas_cat]
 
     fecha_archivo = fecha_desde_nombre_archivo(archivo.name)
     titulo_default = (f"Estado del Ejercicio al {fecha_archivo}" if fecha_archivo
