@@ -289,9 +289,9 @@ def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: 
     # formato estándar de Estado del Ejercicio OREF usa Ejercido solo.
     if fuente == "SICOP" and all(f"{n} (Anual)" in df.columns for n in ["Ejercido", "Devengado", "Ejercido en trámite"]):
         df["Ejercido real (Anual)"] = df["Ejercido (Anual)"] + df["Devengado (Anual)"] + df["Ejercido en trámite (Anual)"]
-        df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al {mes_label})"]
-                                                  + df[f"Ejercido en trámite (Al {mes_label})"])
-        columnas_valor += ["Ejercido real (Anual)", f"Ejercido real (Al {mes_label})"]
+        df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al periodo {mes_label})"]
+                                                  + df[f"Ejercido en trámite (Al periodo {mes_label})"])
+        columnas_valor += ["Ejercido real (Anual)", f"Ejercido real (Al periodo {mes_label})"]
 
     return df, columnas_valor
 
