@@ -1,27 +1,7 @@
 """
 Constructor de Tabla Dinámica Presupuestal — MAP / SICOP
 ==========================================================
-App Streamlit que integra reportes MAP y SICOP en un solo lugar, permite
-armar una tabla dinámica (agregar/quitar filas, columnas y valores como en
-Excel) y descargar el resultado en un Excel con el formato del "Estado del
-Ejercicio" (encabezados institucionales, colores SADER, fila de totales).
 
-Cómo correrla:
-    pip install streamlit pandas openpyxl
-    streamlit run pivot_presupuestal_app.py
-
-Cómo usarla:
-    1. En la barra lateral elige la fuente (MAP o SICOP) — es solo una
-       etiqueta para el encabezado del reporte, el motor de tabla dinámica
-       funciona igual para cualquier archivo tabular que subas.
-    2. Sube el archivo crudo (.csv o .xlsx) de MAP o de SICOP.
-    3. Arma tu tabla: elige columnas para Filas, columnas para Columnas
-       (opcional, para pivotear de verdad) y columnas numéricas para
-       Valores (se suman). Puedes agregar o quitar cuantas quieras y la
-       vista previa se actualiza sola.
-    4. Filtra por Unidad Responsable, Partida, etc. si quieres acotar.
-    5. Descarga el Excel — sale ya con el formato institucional y solo con
-       los datos/columnas que seleccionaste.
 """
 
 from __future__ import annotations
