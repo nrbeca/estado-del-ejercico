@@ -564,7 +564,7 @@ def main():
     titulo_default = (f"Estado del Ejercicio al {fecha_archivo}" if fecha_archivo
                        else f"Estado del Ejercicio al {hoy.day} de {NOMBRES_MES[hoy.month-1]} de {hoy.year}")
 
-    tab_estandar, tab_personalizado = st.tabs([" Reporte estándar (formato original)", "🛠️ Reporte personalizado"])
+    tab_estandar, tab_personalizado = st.tabs([" Reporte estándar (formato original)", " Reporte personalizado"])
 
     # -----------------------------------------------------------------
     # Reporte estándar: siempre sale con el formato de formato_estado_del_ejercicio.xlsx
