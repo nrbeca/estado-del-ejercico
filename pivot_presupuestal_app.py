@@ -570,7 +570,7 @@ def main():
     # Reporte estándar: siempre sale con el formato de formato_estado_del_ejercicio.xlsx
     # -----------------------------------------------------------------
     with tab_estandar:
-        st.caption("Este reporte sale automáticamente con el mismo formato que compartiste, sin importar si cargaste MAP o SICOP.")
+        st.caption("Este reporte sale automáticamente con el mismo formato, sin importar si cargaste MAP o SICOP.")
         pivote_std, encabezados_std, grupos_std, filas_std = construir_reporte_plantilla(df, fuente, mes_corte_idx)
         if pivote_std.empty:
             st.warning("La base cargada no trae las columnas necesarias (Unidad Responsable / Partida) para armar el formato estándar.")
