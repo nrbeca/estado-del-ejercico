@@ -370,7 +370,7 @@ def fecha_desde_nombre_archivo(nombre: str) -> str | None:
 # ---------------------------------------------------------------------------
 def main():
     st.set_page_config(page_title="Tabla dinámica MAP / SICOP", layout="wide")
-    st.title("📊 Constructor de reportes — MAP / SICOP")
+    st.title(" Constructor de reportes — MAP / SICOP")
     st.caption(
         "Integra reportes MAP y SICOP en un solo lugar, arma cualquier reporte "
         "tipo tabla dinámica y descárgalo con el formato del Estado del Ejercicio."
@@ -466,7 +466,7 @@ def main():
     excel_bytes = exportar_excel_oref(pivote, fuente, linea1, linea2, titulo, subtitulo, filas)
     nombre_archivo = f"Reporte_{fuente}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     st.download_button(
-        "⬇️ Descargar Excel con formato Estado del Ejercicio",
+        " Descargar Excel con formato Estado del Ejercicio",
         data=excel_bytes,
         file_name=nombre_archivo,
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
