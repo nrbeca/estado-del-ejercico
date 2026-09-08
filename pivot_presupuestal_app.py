@@ -302,32 +302,32 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
     Reservado/Modificado/Comprometido (Anual y Al periodo) + Ejercido +
     Disponible (Anual y Al periodo). Si la base no trae alguno de estos
     conceptos (ej. MAP no tiene Reservado ni Comprometido), esa columna
-    simplemente se omite. Regresa (tabla, encabezados, grupos, filas)."""
+    simplemente se omite. Regresa (tabla, encabezados, grupos, filas, roles)."""
     mes_label = NOMBRES_MES[mes_corte_idx].capitalize()
     filas = [c for c in ["Unidad Responsable", "Nombre de la Unidad Responsable", "Partida", "Nombre Partida"] if c in df.columns]
 
-    pares = [("Original", "Importe Autorizado"), ("Reservas", "Importe Reservado"),
-             ("Modificado", "Importe Modificado"), ("Comprometido", "Importe Comprometido")]
+    pares = [("Original", "Importe Autorizado", "autorizado"), ("Reservas", "Importe Reservado", "reservado"),
+             ("Modificado", "Importe Modificado", "modificado"), ("Comprometido", "Importe Comprometido", "comprometido")]
 
-    especificacion = []  # (columna_interna, encabezado, grupo)
-    for base, etiqueta in pares:
+    especificacion = []  # (columna_interna, encabezado, grupo, rol)
+    for base, etiqueta, rol in pares:
         col = f"{base} (Anual)"
         if col in df.columns:
-            especificacion.append((col, etiqueta, "Anual"))
-    for base, etiqueta in pares:
+            especificacion.append((col, etiqueta, "Anual", rol))
+    for base, etiqueta, rol in pares:
         col = f"{base} (Al {mes_label})"
         if col in df.columns:
-            especificacion.append((col, etiqueta, "Al periodo"))
+            especificacion.append((col, etiqueta, "Al periodo", rol))
     if "Ejercido (Anual)" in df.columns:
-        especificacion.append(("Ejercido (Anual)", "Importe Ejercido", None))
+        especificacion.append(("Ejercido (Anual)", "Importe Ejercido", None, "ejercido"))
     if "Disponible (Anual)" in df.columns:
-        especificacion.append(("Disponible (Anual)", "Importe Disponible", "Anual"))
+        especificacion.append(("Disponible (Anual)", "Importe Disponible", "Anual", "disponible"))
     if f"Disponible (Al {mes_label})" in df.columns:
-        especificacion.append((f"Disponible (Al {mes_label})", "Importe Disponible", "Al periodo"))
+        especificacion.append((f"Disponible (Al {mes_label})", "Importe Disponible", "Al periodo", "disponible"))
 
-    cols_internas = [c for c, _, _ in especificacion]
+    cols_internas = [c for c, _, _, _ in especificacion]
     if not filas or not cols_internas:
-        return pd.DataFrame(), [], [], filas
+        return pd.DataFrame(), [], [], filas, []
 
     agregado = df.groupby(filas, as_index=False)[cols_internas].sum()
     fila_total = {c: "" for c in agregado.columns}
@@ -337,7 +337,7 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
     agregado = pd.concat([pd.DataFrame([fila_total]), agregado], ignore_index=True)
     agregado = agregado[filas + cols_internas]
 
-    encabezados = filas + [etiqueta for _, etiqueta, _ in especificacion]
+    encabezados = filas + [etiqueta for _, etiqueta, _, _ in especificacion]
 
     grupos = []
     n_filas = len(filas)
@@ -354,7 +354,13 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
         else:
             i += 1
 
-    return agregado, encabezados, grupos, filas
+    # roles: lista paralela a las columnas de valor -> (rol, periodo) para
+    # que el exportador pueda escribir fórmulas de Excel reales (Disponible
+    # = Modificado - Ejercido - Comprometido) en vez de valores fijos.
+    roles = [(rol, "anual" if grupo == "Anual" else ("periodo" if grupo == "Al periodo" else None))
+             for _, _, grupo, rol in especificacion]
+
+    return agregado, encabezados, grupos, filas, roles
 
 
 def aplicar_depuracion_sicop(df: pd.DataFrame) -> pd.DataFrame:
@@ -414,7 +420,8 @@ def construir_pivote(df, filas, columnas, valores, filtros) -> pd.DataFrame:
 def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: str,
                          titulo: str, subtitulo: str, filas: list[str],
                          encabezados: list[str] | None = None,
-                         grupos: list[tuple[int, int, str]] | None = None) -> bytes:
+                         grupos: list[tuple[int, int, str]] | None = None,
+                         roles: list[tuple[str, str | None]] | None = None) -> bytes:
     wb = Workbook()
     ws = wb.active
     ws.title = "Reporte"
@@ -465,15 +472,49 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
         celda.border = BORDE_ENCABEZADO
 
     n_filas_agrupadoras = max(len(filas), 1)
+
+    # Mapa (rol, periodo) -> letra de columna, para poder escribir fórmulas
+    # reales (Disponible = Modificado - Ejercido - Comprometido) en vez de
+    # valores fijos.
+    col_por_rol = {}
+    if roles:
+        for idx, (rol, periodo) in enumerate(roles):
+            col_por_rol[(rol, periodo)] = get_column_letter(n_filas_agrupadoras + 1 + idx)
+
+    total_row_num = fila_encabezado + 1
+    first_data_row = total_row_num + 1
+    last_row_num = fila_encabezado + len(pivote)
+
     for i, (_, fila) in enumerate(pivote.iterrows()):
         r = fila_encabezado + 1 + i
         es_total = str(fila.iloc[0]) == "Total general"
         for j, col in enumerate(pivote.columns, start=1):
             valor = fila[col]
-            celda = ws.cell(row=r, column=j, value=valor)
+            es_columna_valor = col not in (filas or [])
+            idx_rol = j - n_filas_agrupadoras - 1
+            rol, periodo = roles[idx_rol] if (roles and es_columna_valor and 0 <= idx_rol < len(roles)) else (None, None)
+
+            celda = ws.cell(row=r, column=j)
+            if rol == "disponible":
+                col_mod = col_por_rol.get(("modificado", periodo))
+                col_eje = col_por_rol.get(("ejercido", None))
+                col_com = col_por_rol.get(("comprometido", periodo))
+                if col_mod and col_eje:
+                    formula = f"={col_mod}{r}-{col_eje}{r}"
+                    if col_com:
+                        formula += f"-{col_com}{r}"
+                    celda.value = formula
+                else:
+                    celda.value = valor
+            elif es_total and es_columna_valor and last_row_num >= first_data_row:
+                col_letra = get_column_letter(j)
+                celda.value = f"=SUM({col_letra}{first_data_row}:{col_letra}{last_row_num})"
+            else:
+                celda.value = valor
+
             celda.border = BORDE
             celda.alignment = Alignment(vertical="center", horizontal="center" if col in (filas or []) else None)
-            if isinstance(valor, (int, float)) and col not in (filas or []):
+            if es_columna_valor and (isinstance(valor, (int, float)) or rol):
                 celda.number_format = FORMATO_MONEDA
             if es_total:
                 celda.font = Font(name="Arial", size=11, bold=True)
@@ -510,11 +551,11 @@ def fecha_desde_nombre_archivo(nombre: str) -> str | None:
 # Interfaz Streamlit
 # ---------------------------------------------------------------------------
 def main():
-    st.set_page_config(page_title="Tabla dinámica MAP / SICOP", layout="wide")
-    st.title(" Constructor de reportes — MAP / SICOP")
+    st.set_page_config(page_title="Estado del Ejercicio — MAP / SICOP", layout="wide")
+    st.title(" Estado del Ejercicio — MAP / SICOP")
     st.caption(
-        "Integra reportes MAP y SICOP en un solo lugar, arma cualquier reporte "
-        "tipo tabla dinámica y descárgalo con el formato del Estado del Ejercicio."
+        "Sube el crudo de MAP o SICOP y descarga el Estado del Ejercicio con el "
+        "mismo formato institucional, sin importar cuál de las dos fuentes uses."
     )
 
     with st.sidebar:
@@ -539,7 +580,7 @@ def main():
             )
 
     if not archivo:
-        st.info("Sube un archivo en la barra lateral para empezar a armar tu reporte.")
+        st.info("Sube un archivo en la barra lateral para generar el reporte.")
         return
 
     try:
@@ -549,104 +590,38 @@ def main():
         return
 
     df = enriquecer_con_catalogos(df)
-    df, columnas_familia = agregar_periodos_y_disponible(df, fuente, mes_corte_idx)
+    df, _ = agregar_periodos_y_disponible(df, fuente, mes_corte_idx)
     if fuente == "SICOP" and depurar_sicop:
         df = aplicar_depuracion_sicop(df)
 
     st.success(f"Archivo cargado: {archivo.name} — {len(df):,} filas")
 
-    columnas_no_valor = [c for c in df.columns if c not in columnas_familia]
-    columnas_num_extra = [c for c in columnas_no_valor if pd.api.types.is_numeric_dtype(df[c])]
-    columnas_cat = [c for c in columnas_no_valor if c not in columnas_num_extra]
-    campos_sugeridos = [c for c in ["Unidad Responsable (nombre)", "Partida (nombre)", "Programa (nombre)", "Capítulo (nombre)"] if c in columnas_cat]
-
     fecha_archivo = fecha_desde_nombre_archivo(archivo.name)
     titulo_default = (f"Estado del Ejercicio al {fecha_archivo}" if fecha_archivo
                        else f"Estado del Ejercicio al {hoy.day} de {NOMBRES_MES[hoy.month-1]} de {hoy.year}")
 
-    tab_estandar, tab_personalizado = st.tabs([" Reporte estándar (formato original)", " Reporte personalizado"])
+    pivote, encabezados, grupos, filas, roles = construir_reporte_plantilla(df, fuente, mes_corte_idx)
+    if pivote.empty:
+        st.warning("La base cargada no trae las columnas necesarias (Unidad Responsable / Partida) para armar el reporte.")
+        return
 
-    # -----------------------------------------------------------------
-    # Reporte estándar: siempre sale con el formato de formato_estado_del_ejercicio.xlsx
-    # -----------------------------------------------------------------
-    with tab_estandar:
-        st.caption("Este reporte sale automáticamente con el mismo formato, sin importar si cargaste MAP o SICOP.")
-        pivote_std, encabezados_std, grupos_std, filas_std = construir_reporte_plantilla(df, fuente, mes_corte_idx)
-        if pivote_std.empty:
-            st.warning("La base cargada no trae las columnas necesarias (Unidad Responsable / Partida) para armar el formato estándar.")
-        else:
-            st.dataframe(pivote_std, use_container_width=True, height=420)
-            colA, colB = st.columns(2)
-            with colA:
-                linea1_std = st.text_input("Encabezado — línea 1", value="Unidad de Administración y Finanzas", key="linea1_std")
-                titulo_std = st.text_input("Título del reporte", value=titulo_default, key="titulo_std")
-            with colB:
-                linea2_std = st.text_input("Encabezado — línea 2", value="Dirección General de Programación, Presupuesto y Finanzas", key="linea2_std")
-                subtitulo_std = st.text_input("Subtítulo del reporte", value=f"Reporte {fuente}", key="subtitulo_std")
+    st.dataframe(pivote, use_container_width=True, height=420)
 
-            excel_std = exportar_excel_oref(pivote_std, fuente, linea1_std, linea2_std, titulo_std, subtitulo_std,
-                                             filas_std, encabezados_std, grupos_std)
-            st.download_button(
-                " Descargar Excel — formato original",
-                data=excel_std,
-                file_name=f"Estado_del_Ejercicio_{fuente}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+    colA, colB = st.columns(2)
+    with colA:
+        linea1 = st.text_input("Encabezado — línea 1", value="Unidad de Administración y Finanzas")
+        titulo = st.text_input("Título del reporte", value=titulo_default)
+    with colB:
+        linea2 = st.text_input("Encabezado — línea 2", value="Dirección General de Programación, Presupuesto y Finanzas")
+        subtitulo = st.text_input("Subtítulo del reporte", value=f"Reporte {fuente}")
 
-    # -----------------------------------------------------------------
-    # Reporte personalizado: parte de los mismos campos, pero se puede
-    # agregar o quitar cualquier cosa de la base para armar otro reporte.
-    # -----------------------------------------------------------------
-    with tab_personalizado:
-        st.caption("Arranca con los mismos campos del reporte estándar y agrega o quita lo que necesites.")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            filas = st.multiselect("Filas (agrupar por)", columnas_cat,
-                                    default=[c for c in filas_std if c in columnas_cat] or campos_sugeridos[:1])
-        with c2:
-            columnas_pivote = st.multiselect("Columnas (opcional, para pivotear)", [c for c in columnas_cat if c not in filas])
-        with c3:
-            mostrar_mensuales = st.checkbox("Incluir columnas mensuales individuales en 'Valores'", value=False)
-            opciones_valor = columnas_familia + (columnas_num_extra if mostrar_mensuales else [])
-            prioridad = ["Original", "Reservas", "Modificado", "Comprometido", "Ejercido", "Disponible"]
-            default_valores = [c for base in prioridad for c in columnas_familia if c.startswith(base + " (")]
-            valores = st.multiselect("Valores (se suman)", opciones_valor, default=default_valores)
-
-        with st.expander("Filtros — cualquier columna de la base", expanded=False):
-            filtros = {}
-            cols_filtro = st.multiselect("¿Qué columnas quieres filtrar?", columnas_cat, default=campos_sugeridos, key="cols_filtro_custom")
-            for col in cols_filtro:
-                opciones = sorted(df[col].dropna().astype(str).unique().tolist())
-                filtros[col] = st.multiselect(f"Valores de «{col}»", opciones, key=f"filtro_custom_{col}")
-
-        dff = df.copy()
-        for col, seleccion in filtros.items():
-            if seleccion:
-                dff = dff[dff[col].astype(str).isin(seleccion)]
-
-        pivote = construir_pivote(dff, filas, columnas_pivote, valores, {})
-
-        st.subheader("Vista previa")
-        if pivote.empty:
-            st.warning("Elige al menos una columna en Filas y una en Valores para ver la tabla.")
-        else:
-            st.dataframe(pivote, use_container_width=True, height=420)
-
-            colA, colB = st.columns(2)
-            with colA:
-                linea1 = st.text_input("Encabezado — línea 1", value="Unidad de Administración y Finanzas", key="linea1_custom")
-                titulo = st.text_input("Título del reporte", value=titulo_default, key="titulo_custom")
-            with colB:
-                linea2 = st.text_input("Encabezado — línea 2", value="Dirección General de Programación, Presupuesto y Finanzas", key="linea2_custom")
-                subtitulo = st.text_input("Subtítulo del reporte", value=f"Reporte {fuente} — datos seleccionados", key="subtitulo_custom")
-
-            excel_bytes = exportar_excel_oref(pivote, fuente, linea1, linea2, titulo, subtitulo, filas)
-            st.download_button(
-                " Descargar Excel — reporte personalizado",
-                data=excel_bytes,
-                file_name=f"Reporte_{fuente}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+    excel_bytes = exportar_excel_oref(pivote, fuente, linea1, linea2, titulo, subtitulo, filas, encabezados, grupos, roles)
+    st.download_button(
+        " Descargar Excel — Estado del Ejercicio",
+        data=excel_bytes,
+        file_name=f"Estado_del_Ejercicio_{fuente}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
 
 if __name__ == "__main__":
