@@ -315,7 +315,7 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
         if col in df.columns:
             especificacion.append((col, etiqueta, "Anual", rol))
     for base, etiqueta, rol in pares:
-        col = f"{base} (Al {mes_label})"
+        col = f"{base} ( {mes_label})"
         if col in df.columns:
             especificacion.append((col, etiqueta, "Al periodo", rol))
     if "Ejercido (Anual)" in df.columns:
@@ -323,7 +323,7 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
     if "Disponible (Anual)" in df.columns:
         especificacion.append(("Disponible (Anual)", "Importe Disponible", "Anual", "disponible"))
     if f"Disponible (Al {mes_label})" in df.columns:
-        especificacion.append((f"Disponible (Al {mes_label})", "Importe Disponible", "Al periodo", "disponible"))
+        especificacion.append((f"Disponible ( {mes_label})", "Importe Disponible", "Al periodo", "disponible"))
 
     cols_internas = [c for c, _, _, _ in especificacion]
     if not filas or not cols_internas:
