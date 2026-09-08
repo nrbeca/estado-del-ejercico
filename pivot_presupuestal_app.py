@@ -554,8 +554,7 @@ def main():
     st.set_page_config(page_title="Estado del Ejercicio — MAP / SICOP", layout="wide")
     st.title(" Estado del Ejercicio — MAP / SICOP")
     st.caption(
-        "Sube el crudo de MAP o SICOP y descarga el Estado del Ejercicio con el "
-        "mismo formato institucional, sin importar cuál de las dos fuentes uses."
+        "Sube el MAP o SICOP y descarga el Estado del Ejercicio "
     )
 
     with st.sidebar:
