@@ -65,41 +65,34 @@ NOMBRES_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
 # ---------------------------------------------------------------------------
 CATALOGO_UNIDADES = {
     '100': 'Secretaría',
-    '106': 'Coordinación de Legislación y Consulta',
-    '107': 'Coordinación de lo Contencioso',
-    '110': 'Unidad de Asuntos Jurídicos',
+    '110': 'Unidad de Asuntos Jurídicos, Derechos Humanos y Normalización',
     '111': 'Dirección General de Comunicación Social',
-    '112': 'Coordinación de Atención Legislativa',
-    '117': 'Coordinación de Asuntos Internacionales',
-    '119': 'Dirección General de Planeación y Evaluación de Políticas y Programas',
-    '120': 'Dirección General del Servicio de Información Agroalimentaria y Pesquera',
+    '112': 'Dirección General de Enlace Legislativo',
+    '117': 'Coordinación General de Asuntos Internacionales',
     '200': 'Subsecretaría de Agricultura y Desarrollo Rural',
-    '210': 'Dirección General de Logística y Alimentación',
-    '211': 'Dirección General de Normalización Agroalimentaria',
-    '212': 'Dirección General de Organización para la Productividad',
-    '213': 'Coordinación General de Promoción Comercial y Fomento a las Exportaciones',
-    '214': 'Dirección General de la Autosuficiencia Alimentaria',
-    '215': 'Coordinación General de Enlace Sectorial',
-    '220': 'Unidad de Bienestar para el Campo',
+    '220': 'Coordinación General de Bienestar para el Campo',
     '221': 'Dirección General de Fertilizantes para el Bienestar',
     '222': 'Dirección General de Producción para el Bienestar',
-    '223': 'Dirección General de Ordenamiento Pesquero y Acuícola',
-    '224': 'Dirección General de Inspección y Vigilancia',
-    '225': 'Coordinación General de Delegaciones',
-    '226': 'Órgano Interno de Control',
-    '227': 'Coordinación General de Asuntos Internacionales',
-    '230': 'Dirección General de Administración y Finanzas',
-    '231': 'Coordinación General de Agricultura',
-    '232': 'Delegación de Programas para el Desarrollo',
+    '225': 'Coordinación General de Producción Agrícola y Ganadera',
+    '226': 'Dirección General de Producción Agrícola',
+    '227': 'Dirección General de Producción Ganadera',
+    '228': 'Dirección General de Implementación de Acuerdos Sectoriales',
+    '230': 'Coordinación General de Comercialización y Financiamiento',
+    '231': 'Dirección General de Precios y Ordenamiento Comercial',
+    '232': 'Dirección General de Financiamiento y Gestión de Riesgos',
     '233': 'Dirección General de Agregación de Valor y Comercialización',
-    '235': 'Dirección General de Programación, Presupuesto y Finanzas',
-    '237': 'Dirección General de Tecnologías de la Información y Comunicaciones',
+    '235': 'Coordinación General de Eficiencia Hídrica Agroalimentaria',
+    '236': 'Dirección General de Eficiencia Hídrica en el Riego',
+    '237': 'Dirección General de Eficiencia Hídrica en el Temporal',
     '240': 'Coordinación General de Innovación y Transición Agroecológica',
+    '241': 'Dirección General de Innovación',
     '242': 'Dirección General de Transición Agroecológica',
-    '245': 'Dirección General de Recursos Materiales, Inmuebles y Servicios',
-    '250': 'Unidad de Operación Territorial y Eficiencia Hídrica Agroalimentaria',
+    '245': 'Coordinación General de Sustentabilidad y Resiliencia Climática',
+    '246': 'Dirección General de Sustentabilidad',
+    '247': 'Dirección General de Financiamiento Verde',
+    '250': 'Coordinación General de Operación Territorial',
+    '251': 'Dirección General de Integración Territorial de Programas',
     '252': 'Dirección General de Intervención Territorial Estratégica',
-    '253': 'Dirección General de Eficacia Hídrica en Riego y Temporal',
     '260': 'Oficina de Representación en Aguascalientes',
     '261': 'Oficina de Representación en Baja California',
     '262': 'Oficina de Representación en Baja California Sur',
@@ -133,25 +126,15 @@ CATALOGO_UNIDADES = {
     '290': 'Oficina de Representación en Yucatán',
     '291': 'Oficina de Representación en Zacatecas',
     '292': 'Oficina de Representación en la Región Lagunera',
-    '410': 'Dirección General de Fortalecimiento a la Agricultura Familiar',
-    '411': 'Dirección General de Integración Económica',
-    '413': 'Dirección General de Investigación, Desarrollo Tecnológico y Extensionismo',
     '500': 'Unidad de Administración y Finanzas',
     '510': 'Dirección General de Programación, Presupuesto y Finanzas',
     '511': 'Dirección General de Capital Humano y Desarrollo Organizacional',
     '512': 'Dirección General de Recursos Materiales, Inmuebles y Servicios',
     '513': 'Dirección General de Tecnologías de la Información y Comunicaciones',
-    '810': 'SENASICA',
-    '811': 'SNICS',
-    '900': 'Coordinación General de Producción, Comercialización, Sustentabilidad e Innovación',
-    '910': 'Unidad de Innovación, Sustentabilidad y Resiliencia Climática',
-    '911': 'Dirección General de Desarrollo e Innovación',
-    '912': 'Dirección General de Sustentabilidad y Resiliencia Climática',
-    '920': 'Unidad de Producción, Comercialización y Financiamiento',
-    '921': 'Dirección General de Producción Agrícola',
-    '922': 'Dirección General de Producción Ganadera, Pesquera y Acuícola',
-    '923': 'Dirección General de Precios, Ordenamiento Comercial y Valor Agregado',
-    '924': 'Dirección General de Financiamiento y Gestión de Riesgos',
+    '800': 'Coordinación General de Información, Inteligencia y Evaluación',
+    '810': 'Dirección General de Evaluación, Políticas y Programas',
+    '811': 'Dirección General del Servicio de Información Agroalimentaria y Pesquera',
+    '812': 'Dirección General de Planeación',
     'A1I': 'Universidad Autónoma Chapingo',
     'AFU': 'Comité Nacional para el Desarrollo Sustentable de la Caña de Azúcar',
     'B00': 'Servicio Nacional de Sanidad, Inocuidad y Calidad Agroalimentaria',
@@ -166,9 +149,114 @@ CATALOGO_UNIDADES = {
     'JAL': 'Productora de Semillas para el Bienestar',
     'JBK': 'Productora Nacional de Biológicos Veterinarios',
     'RJL': 'Instituto Mexicano de Investigación en Pesca y Acuacultura Sustentables',
-    'VSS': 'Alimentación para el Bienestar, S.A de C.V.',
+    'VSS': 'Alimentación para el Bienestar, S.A. de C.V.',
     'VST': 'Leche para el Bienestar, S.A. de C.V.',
 }
+
+CATALOGO_GRUPO_UR = {
+    '100': 'Sector Central',
+    '106': 'Sector Central',
+    '107': 'Sector Central',
+    '110': 'Sector Central',
+    '111': 'Sector Central',
+    '112': 'Sector Central',
+    '117': 'Sector Central',
+    '119': 'Sector Central',
+    '120': 'Sector Central',
+    '200': 'Sector Central',
+    '220': 'Sector Central',
+    '221': 'Sector Central',
+    '222': 'Sector Central',
+    '225': 'Sector Central',
+    '226': 'Sector Central',
+    '227': 'Sector Central',
+    '228': 'Sector Central',
+    '230': 'Sector Central',
+    '231': 'Sector Central',
+    '232': 'Sector Central',
+    '233': 'Sector Central',
+    '235': 'Sector Central',
+    '236': 'Sector Central',
+    '237': 'Sector Central',
+    '240': 'Sector Central',
+    '241': 'Sector Central',
+    '242': 'Sector Central',
+    '245': 'Sector Central',
+    '246': 'Sector Central',
+    '247': 'Sector Central',
+    '250': 'Sector Central',
+    '251': 'Sector Central',
+    '252': 'Sector Central',
+    '253': 'Sector Central',
+    '260': 'OREF',
+    '261': 'OREF',
+    '262': 'OREF',
+    '263': 'OREF',
+    '264': 'OREF',
+    '265': 'OREF',
+    '266': 'OREF',
+    '267': 'OREF',
+    '268': 'OREF',
+    '269': 'OREF',
+    '270': 'OREF',
+    '271': 'OREF',
+    '272': 'OREF',
+    '273': 'OREF',
+    '274': 'OREF',
+    '275': 'OREF',
+    '276': 'OREF',
+    '277': 'OREF',
+    '278': 'OREF',
+    '279': 'OREF',
+    '280': 'OREF',
+    '281': 'OREF',
+    '282': 'OREF',
+    '283': 'OREF',
+    '284': 'OREF',
+    '285': 'OREF',
+    '286': 'OREF',
+    '287': 'OREF',
+    '288': 'OREF',
+    '289': 'OREF',
+    '290': 'OREF',
+    '291': 'OREF',
+    '292': 'OREF',
+    '500': 'Sector Central',
+    '510': 'Sector Central',
+    '511': 'Sector Central',
+    '512': 'Sector Central',
+    '513': 'Sector Central',
+    '800': 'Sector Central',
+    '810': 'Sector Central',
+    '811': 'Sector Central',
+    '812': 'Sector Central',
+    '900': 'Sector Central',
+    '910': 'Sector Central',
+    '911': 'Sector Central',
+    '912': 'Sector Central',
+    '920': 'Sector Central',
+    '921': 'Sector Central',
+    '922': 'Sector Central',
+    '923': 'Sector Central',
+    '924': 'Sector Central',
+    'A1I': 'Entidad Paraestatal',
+    'AFU': 'Entidad Paraestatal',
+    'B00': 'Órgano Desconcentrado',
+    'C00': 'Órgano Desconcentrado',
+    'D00': 'Órgano Desconcentrado',
+    'I00': 'Órgano Desconcentrado',
+    'I6L': 'Entidad Paraestatal',
+    'I9H': 'Entidad Paraestatal',
+    'IZC': 'Entidad Paraestatal',
+    'IZI': 'Entidad Paraestatal',
+    'JAG': 'Entidad Paraestatal',
+    'JAL': 'Entidad Paraestatal',
+    'JBK': 'Entidad Paraestatal',
+    'RJL': 'Entidad Paraestatal',
+    'VSS': 'Entidad Paraestatal',
+    'VST': 'Entidad Paraestatal',
+}
+
 
 CATALOGO_PARTIDAS = {
     '11101': 'Dietas (Ramos Autónomos)',
@@ -901,8 +989,6 @@ def construir_reporte_plantilla(df: pd.DataFrame, fuente: str, mes_corte_idx: in
         especificacion.append(("Ejercido (Anual)", "Importe Ejercido", None, "ejercido"))
     if "Disponible (Anual)" in df.columns:
         especificacion.append(("Disponible (Anual)", "Importe Disponible", "Anual", "disponible"))
-    if f"Disponible (Al {mes_label})" in df.columns:
-        especificacion.append((f"Disponible (Al {mes_label})", "Importe Disponible", "Al periodo", "disponible"))
 
     cols_internas = [c for c, _, _, _ in especificacion]
     if not filas or not cols_internas:
@@ -994,11 +1080,28 @@ def construir_pivote(df, filas, columnas, valores, filtros) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Exportación a Excel con el formato del Estado del Ejercicio
+# Exportación a Excel — replica exacta de formato_estado_del_ejercicio.xlsx
 # ---------------------------------------------------------------------------
-def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: str,
-                         titulo: str, subtitulo: str, filas: list[str],
-                         encabezados: list[str] | None = None,
+ANCHOS_COLUMNA = {
+    ("Unidad Responsable", None): 15.140625,
+    ("Nombre de la Unidad Responsable", None): 53.28515625,
+    ("Partida", None): 8.43,
+    ("Nombre Partida", None): 65.0,
+    ("Importe Autorizado", "Anual"): 19.7109375,
+    ("Importe Reservado", "Anual"): 13.42578125,
+    ("Importe Modificado", "Anual"): 19.7109375,
+    ("Importe Comprometido", "Anual"): 17.7109375,
+    ("Importe Autorizado", "Al periodo"): 19.7109375,
+    ("Importe Reservado", "Al periodo"): 14.28515625,
+    ("Importe Modificado", "Al periodo"): 19.7109375,
+    ("Importe Comprometido", "Al periodo"): 16.85546875,
+    ("Importe Ejercido", None): 19.7109375,
+    ("Importe Disponible", "Anual"): 8.43,
+}
+
+
+def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitulo: str,
+                         filas: list[str], encabezados: list[str] | None = None,
                          grupos: list[tuple[int, int, str]] | None = None,
                          roles: list[tuple[str, str | None]] | None = None) -> bytes:
     wb = Workbook()
@@ -1009,14 +1112,6 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
     n_cols = max(len(pivote.columns), 1)
     ultima_col = get_column_letter(n_cols)
     encabezados = encabezados or [str(c) for c in pivote.columns]
-
-    c = ws.cell(row=1, column=n_cols, value=linea1)
-    c.font = Font(name="Arial", size=12, bold=True)
-    c.alignment = Alignment(horizontal="right")
-
-    c = ws.cell(row=2, column=n_cols, value=linea2)
-    c.font = Font(name="Arial", size=11, bold=True)
-    c.alignment = Alignment(horizontal="right")
 
     ws.merge_cells(f"A5:{ultima_col}5")
     c = ws["A5"]; c.value = titulo
@@ -1032,6 +1127,10 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
 
     fila_grupo = 8
     fila_encabezado = 9
+
+    # grupo por columna (1-based), para poder buscar el ancho exacto y para
+    # saber, más abajo, si una columna de valor pertenece al bloque "Anual".
+    grupo_por_col: dict[int, str] = {}
     for col_ini, col_fin, texto in (grupos or []):
         if col_fin > col_ini:
             ws.merge_cells(start_row=fila_grupo, start_column=col_ini, end_row=fila_grupo, end_column=col_fin)
@@ -1041,6 +1140,7 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
         celda.alignment = Alignment(horizontal="center", vertical="top")
         for j in range(col_ini, col_fin + 1):
             ws.cell(row=fila_grupo, column=j).border = Border(left=THIN_BLANCO, right=THIN_BLANCO)
+            grupo_por_col[j] = texto
 
     ws.row_dimensions[fila_encabezado].height = 30
     for j, texto in enumerate(encabezados, start=1):
@@ -1049,11 +1149,14 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
         celda.fill = PatternFill("solid", fgColor=BURDEOS)
         celda.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         celda.border = BORDE_ENCABEZADO
+        ancho = ANCHOS_COLUMNA.get((texto, grupo_por_col.get(j)), 13)
+        ws.column_dimensions[get_column_letter(j)].width = ancho
 
     n_filas_agrupadoras = max(len(filas), 1)
 
     # Mapa (rol, periodo) -> letra de columna, para poder escribir fórmulas
-    # reales (Disponible = Modificado - Ejercido - Comprometido) en vez de
+    # reales (Disponible = Modificado - Reservado - Comprometido - Ejercido,
+    # igual que en formato_estado_del_ejercicio.xlsx: "=+G-F-H-M") en vez de
     # valores fijos.
     col_por_rol = {}
     if roles:
@@ -1074,20 +1177,27 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
             rol, periodo = roles[idx_rol] if (roles and es_columna_valor and 0 <= idx_rol < len(roles)) else (None, None)
 
             celda = ws.cell(row=r, column=j)
-            if rol == "disponible":
+            if es_total and es_columna_valor and last_row_num >= first_data_row:
+                # La fila de Total general siempre usa SUBTOTAL sobre el
+                # rango de datos (igual en Disponible que en cualquier otra
+                # columna), tal como en la plantilla oficial.
+                col_letra = get_column_letter(j)
+                celda.value = f"=SUBTOTAL(9,{col_letra}{first_data_row}:{col_letra}{last_row_num})"
+            elif rol == "disponible":
                 col_mod = col_por_rol.get(("modificado", periodo))
-                col_eje = col_por_rol.get(("ejercido", None))
+                col_res = col_por_rol.get(("reservado", periodo))
                 col_com = col_por_rol.get(("comprometido", periodo))
+                col_eje = col_por_rol.get(("ejercido", None))
                 if col_mod and col_eje:
-                    formula = f"={col_mod}{r}-{col_eje}{r}"
+                    formula = f"=+{col_mod}{r}"
+                    if col_res:
+                        formula += f"-{col_res}{r}"
                     if col_com:
                         formula += f"-{col_com}{r}"
+                    formula += f"-{col_eje}{r}"
                     celda.value = formula
                 else:
                     celda.value = valor
-            elif es_total and es_columna_valor and last_row_num >= first_data_row:
-                col_letra = get_column_letter(j)
-                celda.value = f"=SUM({col_letra}{first_data_row}:{col_letra}{last_row_num})"
             else:
                 celda.value = valor
 
@@ -1101,11 +1211,7 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, linea1: str, linea2: 
             else:
                 celda.font = Font(name="Calibri", size=11)
 
-    ws.freeze_panes = ws.cell(row=fila_encabezado + 2, column=n_filas_agrupadoras + 1)
     ws.print_title_rows = f"1:{fila_encabezado}"
-    for j, texto in enumerate(encabezados, start=1):
-        ancho = max(13, min(40, len(str(texto)) + 6))
-        ws.column_dimensions[get_column_letter(j)].width = ancho
 
     buffer = io.BytesIO()
     wb.save(buffer)
@@ -1139,23 +1245,16 @@ def main():
     with st.sidebar:
         st.header("1. Fuente de datos")
         fuente = st.radio("¿Qué vas a cargar?", ["MAP", "SICOP"], horizontal=True)
-        archivo = st.file_uploader(f"Archivo crudo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
+        archivo = st.file_uploader(f"Archivo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
         st.divider()
         st.header("2. Periodo")
         hoy = date.today()
         mes_corte_idx = st.selectbox(
-            "Corte de 'Al periodo' (acumulado enero → este mes)",
             options=list(range(12)),
             format_func=lambda i: NOMBRES_MES[i].capitalize(),
             index=min(hoy.month - 1, 11),
         )
-        depurar_sicop = False
-        if fuente == "SICOP":
-            depurar_sicop = st.checkbox(
-                "Excluir capítulo 1000, partida 39801 y CONTROL_OPERATIVO 60-69",
-                value=False,
-                help="Reglas confirmadas en tu procesador SICOP (nrbeca/nuevo). Revisa si aplican al reporte que quieres armar.",
-            )
+
 
     if not archivo:
         st.info("Sube un archivo en la barra lateral para generar el reporte.")
@@ -1217,18 +1316,16 @@ def main():
 
     st.dataframe(pivote, use_container_width=True, height=420)
 
-    # Encabezados institucionales: se arman solos, ya no se capturan a mano.
-    linea1 = "Unidad de Administración y Finanzas"
+    # Título y subtítulo (fila 5 y 6 de la plantilla oficial) se arman
+    # solos, ya no se capturan a mano.
     titulo = titulo_default
     if not todas_las_unidades and len(unidades_seleccionadas) == 1:
         nombre_sel = solo_nombre(unidades_seleccionadas[0], cat_ur_nombres)
-        linea2 = nombre_sel or "Dirección General de Programación, Presupuesto y Finanzas"
-        subtitulo = f"Reporte {fuente} — UR {unidades_seleccionadas[0]}"
+        subtitulo = nombre_sel or f"Unidad Responsable {unidades_seleccionadas[0]}"
     else:
-        linea2 = "Dirección General de Programación, Presupuesto y Finanzas"
         subtitulo = f"Reporte {fuente}"
 
-    excel_bytes = exportar_excel_oref(pivote, fuente, linea1, linea2, titulo, subtitulo, filas, encabezados, grupos, roles)
+    excel_bytes = exportar_excel_oref(pivote, fuente, titulo, subtitulo, filas, encabezados, grupos, roles)
     st.download_button(
         " Descargar Excel — Estado del Ejercicio",
         data=excel_bytes,
