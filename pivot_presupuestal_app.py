@@ -1,32 +1,4 @@
-"""
-Constructor de Tabla Dinámica Presupuestal — MAP / SICOP
-==========================================================
-App Streamlit que integra los reportes crudos de MAP y SICOP, deja armar
-cualquier reporte tipo tabla dinámica (agregar/quitar filas, columnas y
-valores, filtrar por cualquier campo de la base — incluida Unidad
-Responsable, Partida y Programa por nombre) y descarga el resultado en
-Excel con el formato institucional del "Estado del Ejercicio".
 
-Cómo correrla:
-    pip install -r requirements.txt
-    streamlit run pivot_presupuestal_app.py
-
-Qué hace por ti automáticamente al cargar un archivo crudo:
-    - Detecta la codificación (MAP = utf-8, SICOP = latin-1) sola.
-    - Construye la Partida completa en SICOP (Capítulo+Concepto+Genérica+
-      Específica) igual que en tus reportes actuales.
-    - Junta los catálogos de catalogs/unidades.csv, catalogs/partidas.csv
-      y catalogs/programas.csv para mostrar nombres, no solo códigos, en
-      los filtros y en las filas del reporte. Si un código no está en el
-      catálogo, muestra el código tal cual — puedes ir agregando filas a
-      esos CSV para completar la cobertura.
-    - Calcula, para cada familia de importes (Original, Modificado,
-      Comprometido, Ejercido, Reservas, etc.), el total "Anual" y el
-      "Al periodo" (acumulado de enero al mes que elijas), igual que en
-      el Estado del Ejercicio.
-    - Calcula el Importe Disponible como Modificado − Ejercido − Comprometido
-      (fórmula verificada contra tu archivo de ejemplo, cuadra al centavo).
-"""
 
 from __future__ import annotations
 
@@ -1128,6 +1100,15 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitul
     fila_grupo = 8
     fila_encabezado = 9
 
+    # Toda la fila 8 va en verde (igual que tu plantilla), no solo las
+    # celdas que dicen "Anual"/"Al periodo" — incluye las columnas de
+    # filas (Unidad Responsable, Partida, etc.) y cualquier columna suelta
+    # como "Importe Ejercido" que no pertenece a ningún grupo.
+    for j in range(1, n_cols + 1):
+        celda = ws.cell(row=fila_grupo, column=j)
+        celda.fill = PatternFill("solid", fgColor=VERDE)
+        celda.border = Border(left=THIN_BLANCO, right=THIN_BLANCO, top=THIN_GRIS, bottom=THIN_GRIS)
+
     # grupo por columna (1-based), para poder buscar el ancho exacto y para
     # saber, más abajo, si una columna de valor pertenece al bloque "Anual".
     grupo_por_col: dict[int, str] = {}
@@ -1136,10 +1117,8 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitul
             ws.merge_cells(start_row=fila_grupo, start_column=col_ini, end_row=fila_grupo, end_column=col_fin)
         celda = ws.cell(row=fila_grupo, column=col_ini, value=texto)
         celda.font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
-        celda.fill = PatternFill("solid", fgColor=VERDE)
         celda.alignment = Alignment(horizontal="center", vertical="top")
         for j in range(col_ini, col_fin + 1):
-            ws.cell(row=fila_grupo, column=j).border = Border(left=THIN_BLANCO, right=THIN_BLANCO)
             grupo_por_col[j] = texto
 
     ws.row_dimensions[fila_encabezado].height = 30
@@ -1245,23 +1224,10 @@ def main():
     with st.sidebar:
         st.header("1. Fuente de datos")
         fuente = st.radio("¿Qué vas a cargar?", ["MAP", "SICOP"], horizontal=True)
-        archivo = st.file_uploader(f"Archivo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
-        st.divider()
-        st.header("2. Periodo")
-        hoy = date.today()
-        mes_corte_idx = st.selectbox(
-            "Corte de 'Al periodo' (acumulado enero → este mes)",
-            options=list(range(12)),
-            format_func=lambda i: NOMBRES_MES[i].capitalize(),
-            index=min(hoy.month - 1, 11),
-        )
-        depurar_sicop = False
-        if fuente == "SICOP":
-            depurar_sicop = st.checkbox(
-                "Excluir capítulo 1000, partida 39801 y CONTROL_OPERATIVO 60-69",
-                value=False,
-                help="Reglas confirmadas en tu procesador SICOP (nrbeca/nuevo). Revisa si aplican al reporte que quieres armar.",
-            )
+        archivo = st.file_uploader(f"Archivo crudo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
+
+    hoy = date.today()
+    mes_corte_idx = min(hoy.month - 1, 11)
 
     if not archivo:
         st.info("Sube un archivo en la barra lateral para generar el reporte.")
@@ -1275,8 +1241,6 @@ def main():
 
     df = enriquecer_con_catalogos(df)
     df, _ = agregar_periodos_y_disponible(df, fuente, mes_corte_idx)
-    if fuente == "SICOP" and depurar_sicop:
-        df = aplicar_depuracion_sicop(df)
 
     st.success(f"Archivo cargado: {archivo.name} — {len(df):,} filas")
 
@@ -1300,13 +1264,13 @@ def main():
 
     st.subheader("Unidades a incluir en el cuadro")
     todas_las_unidades = st.checkbox(
-        "Todas las unidades",
+        "Todas las unidades (incluye todas las OREF, 512, 513 y 120-811)",
         value=True,
     )
     unidades_seleccionadas = codigos_disponibles
     if not todas_las_unidades:
         unidades_seleccionadas = st.multiselect(
-            "Elige una o varias unidades",
+            "Elige una o varias unidades (por ejemplo solo 512, solo 513, o 120 + 811 juntas)",
             options=codigos_disponibles,
             default=[],
             format_func=lambda c: etiqueta_con_nombre(c, cat_ur_nombres),
