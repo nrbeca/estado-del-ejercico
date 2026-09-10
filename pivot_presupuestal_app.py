@@ -1250,6 +1250,7 @@ def main():
         st.header("2. Periodo")
         hoy = date.today()
         mes_corte_idx = st.selectbox(
+            "Corte de 'Al periodo' (acumulado enero → este mes)",
             options=list(range(12)),
             format_func=lambda i: NOMBRES_MES[i].capitalize(),
             index=min(hoy.month - 1, 11),
@@ -1259,6 +1260,7 @@ def main():
             depurar_sicop = st.checkbox(
                 "Excluir capítulo 1000, partida 39801 y CONTROL_OPERATIVO 60-69",
                 value=False,
+                help="Reglas confirmadas en tu procesador SICOP (nrbeca/nuevo). Revisa si aplican al reporte que quieres armar.",
             )
 
     if not archivo:
