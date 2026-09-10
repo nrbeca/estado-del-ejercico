@@ -560,7 +560,7 @@ def main():
     with st.sidebar:
         st.header("1. Fuente de datos")
         fuente = st.radio("¿Qué vas a cargar?", ["MAP", "SICOP"], horizontal=True)
-        archivo = st.file_uploader(f"Archivo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
+        archivo = st.file_uploader(f"Archivo crudo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
         st.divider()
         st.header("2. Periodo")
         hoy = date.today()
@@ -599,6 +599,38 @@ def main():
     titulo_default = (f"Estado del Ejercicio al {fecha_archivo}" if fecha_archivo
                        else f"Estado del Ejercicio al {hoy.day} de {NOMBRES_MES[hoy.month-1]} de {hoy.year}")
 
+    # -----------------------------------------------------------------
+    # Unidades a incluir en el cuadro. Por default salen TODAS las
+    # unidades presentes en el archivo cargado (esto ya cubre todas las
+    # OREF, 512, 513 y 120-811, porque son códigos de unidad como
+    # cualquier otro). Si se desactiva "Todas las unidades", se puede
+    # elegir cualquier combinación puntual (una sola UR, o varias juntas
+    # como 512 + 513, o 120 + 811).
+    # -----------------------------------------------------------------
+    cat_ur_nombres = cargar_catalogo("unidades.csv", "codigo_ur", "nombre_ur")
+    codigos_disponibles = (
+        sorted(df["Unidad Responsable"].dropna().astype(str).unique(), key=lambda c: (len(c), c))
+        if "Unidad Responsable" in df.columns else []
+    )
+
+    st.subheader("Unidades a incluir en el cuadro")
+    todas_las_unidades = st.checkbox(
+        "Todas las unidades (incluye todas las OREF, 512, 513 y 120-811)",
+        value=True,
+    )
+    unidades_seleccionadas = codigos_disponibles
+    if not todas_las_unidades:
+        unidades_seleccionadas = st.multiselect(
+            "Elige una o varias unidades (por ejemplo solo 512, solo 513, o 120 + 811 juntas)",
+            options=codigos_disponibles,
+            default=[],
+            format_func=lambda c: etiqueta_con_nombre(c, cat_ur_nombres),
+        )
+        if not unidades_seleccionadas:
+            st.info("Elige al menos una unidad, o activa 'Todas las unidades'.")
+            return
+        df = df[df["Unidad Responsable"].astype(str).isin(unidades_seleccionadas)]
+
     pivote, encabezados, grupos, filas, roles = construir_reporte_plantilla(df, fuente, mes_corte_idx)
     if pivote.empty:
         st.warning("La base cargada no trae las columnas necesarias (Unidad Responsable / Partida) para armar el reporte.")
@@ -606,13 +638,16 @@ def main():
 
     st.dataframe(pivote, use_container_width=True, height=420)
 
-    colA, colB = st.columns(2)
-    with colA:
-        linea1 = st.text_input("Encabezado — línea 1", value="Unidad de Administración y Finanzas")
-        titulo = st.text_input("Título del reporte", value=titulo_default)
-    with colB:
-        linea2 = st.text_input("Encabezado — línea 2", value="Dirección General de Programación, Presupuesto y Finanzas")
-        subtitulo = st.text_input("Subtítulo del reporte", value=f"Reporte {fuente}")
+    # Encabezados institucionales: se arman solos, ya no se capturan a mano.
+    linea1 = "Unidad de Administración y Finanzas"
+    titulo = titulo_default
+    if not todas_las_unidades and len(unidades_seleccionadas) == 1:
+        nombre_sel = solo_nombre(unidades_seleccionadas[0], cat_ur_nombres)
+        linea2 = nombre_sel or "Dirección General de Programación, Presupuesto y Finanzas"
+        subtitulo = f"Reporte {fuente} — UR {unidades_seleccionadas[0]}"
+    else:
+        linea2 = "Dirección General de Programación, Presupuesto y Finanzas"
+        subtitulo = f"Reporte {fuente}"
 
     excel_bytes = exportar_excel_oref(pivote, fuente, linea1, linea2, titulo, subtitulo, filas, encabezados, grupos, roles)
     st.download_button(
