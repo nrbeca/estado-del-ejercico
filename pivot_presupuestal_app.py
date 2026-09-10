@@ -560,7 +560,7 @@ def main():
     with st.sidebar:
         st.header("1. Fuente de datos")
         fuente = st.radio("¿Qué vas a cargar?", ["MAP", "SICOP"], horizontal=True)
-        archivo = st.file_uploader(f"Archivo crudo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
+        archivo = st.file_uploader(f"Archivo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
         st.divider()
         st.header("2. Periodo")
         hoy = date.today()
