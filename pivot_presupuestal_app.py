@@ -1254,7 +1254,12 @@ def main():
             format_func=lambda i: NOMBRES_MES[i].capitalize(),
             index=min(hoy.month - 1, 11),
         )
-
+        depurar_sicop = False
+        if fuente == "SICOP":
+            depurar_sicop = st.checkbox(
+                "Excluir capítulo 1000, partida 39801 y CONTROL_OPERATIVO 60-69",
+                value=False,
+            )
 
     if not archivo:
         st.info("Sube un archivo en la barra lateral para generar el reporte.")
@@ -1293,13 +1298,13 @@ def main():
 
     st.subheader("Unidades a incluir en el cuadro")
     todas_las_unidades = st.checkbox(
-        "Todas las unidades (incluye todas las OREF, 512, 513 y 120-811)",
+        "Todas las unidades",
         value=True,
     )
     unidades_seleccionadas = codigos_disponibles
     if not todas_las_unidades:
         unidades_seleccionadas = st.multiselect(
-            "Elige una o varias unidades (por ejemplo solo 512, solo 513, o 120 + 811 juntas)",
+            "Elige una o varias unidades",
             options=codigos_disponibles,
             default=[],
             format_func=lambda c: etiqueta_con_nombre(c, cat_ur_nombres),
