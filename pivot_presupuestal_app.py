@@ -1,4 +1,32 @@
+"""
+Constructor de Tabla Dinámica Presupuestal — MAP / SICOP
+==========================================================
+App Streamlit que integra los reportes crudos de MAP y SICOP, deja armar
+cualquier reporte tipo tabla dinámica (agregar/quitar filas, columnas y
+valores, filtrar por cualquier campo de la base — incluida Unidad
+Responsable, Partida y Programa por nombre) y descarga el resultado en
+Excel con el formato institucional del "Estado del Ejercicio".
 
+Cómo correrla:
+    pip install -r requirements.txt
+    streamlit run pivot_presupuestal_app.py
+
+Qué hace por ti automáticamente al cargar un archivo crudo:
+    - Detecta la codificación (MAP = utf-8, SICOP = latin-1) sola.
+    - Construye la Partida completa en SICOP (Capítulo+Concepto+Genérica+
+      Específica) igual que en tus reportes actuales.
+    - Junta los catálogos de catalogs/unidades.csv, catalogs/partidas.csv
+      y catalogs/programas.csv para mostrar nombres, no solo códigos, en
+      los filtros y en las filas del reporte. Si un código no está en el
+      catálogo, muestra el código tal cual — puedes ir agregando filas a
+      esos CSV para completar la cobertura.
+    - Calcula, para cada familia de importes (Original, Modificado,
+      Comprometido, Ejercido, Reservas, etc.), el total "Anual" y el
+      "Al periodo" (acumulado de enero al mes que elijas), igual que en
+      el Estado del Ejercicio.
+    - Calcula el Importe Disponible como Modificado − Ejercido − Comprometido
+      (fórmula verificada contra tu archivo de ejemplo, cuadra al centavo).
+"""
 
 from __future__ import annotations
 
@@ -37,12 +65,16 @@ NOMBRES_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
 # ---------------------------------------------------------------------------
 CATALOGO_UNIDADES = {
     '100': 'Secretaría',
-    '110': 'Unidad de Asuntos Jurídicos, Derechos Humanos y Normalización',
-    '111': 'Dirección General de Comunicación Social',
-    '112': 'Dirección General de Enlace Legislativo',
-    '117': 'Coordinación General de Asuntos Internacionales',
+    '106': 'Coordinación de Legislación y Consulta',
+    '107': 'Coordinación de lo Contencioso',
+    '110': 'Unidad de Asuntos Jurídicos',
+    '111': 'Coordinación de Comunicación Social',
+    '112': 'Coordinación de Atención Legislativa',
+    '117': 'Coordinación de Asuntos Internacionales',
+    '119': 'Dirección General de Planeación y Evaluación de Políticas y Programas',
+    '120': 'Dirección General del Servicio de Información Agroalimentaria y Pesquera',
     '200': 'Subsecretaría de Agricultura y Desarrollo Rural',
-    '220': 'Coordinación General de Bienestar para el Campo',
+    '220': 'Unidad de Bienestar para el Campo',
     '221': 'Dirección General de Fertilizantes para el Bienestar',
     '222': 'Dirección General de Producción para el Bienestar',
     '225': 'Coordinación General de Producción Agrícola y Ganadera',
@@ -62,9 +94,10 @@ CATALOGO_UNIDADES = {
     '245': 'Coordinación General de Sustentabilidad y Resiliencia Climática',
     '246': 'Dirección General de Sustentabilidad',
     '247': 'Dirección General de Financiamiento Verde',
-    '250': 'Coordinación General de Operación Territorial',
+    '250': 'Unidad de Operación Territorial y Eficiencia Hídrica Agroalimentaria',
     '251': 'Dirección General de Integración Territorial de Programas',
     '252': 'Dirección General de Intervención Territorial Estratégica',
+    '253': 'Dirección General de Eficiencia Hídrica en Riego y Temporal',
     '260': 'Oficina de Representación en Aguascalientes',
     '261': 'Oficina de Representación en Baja California',
     '262': 'Oficina de Representación en Baja California Sur',
@@ -107,6 +140,15 @@ CATALOGO_UNIDADES = {
     '810': 'Dirección General de Evaluación, Políticas y Programas',
     '811': 'Dirección General del Servicio de Información Agroalimentaria y Pesquera',
     '812': 'Dirección General de Planeación',
+    '900': 'Coordinación General de Producción, Comercialización, Sustentabilidad e Innovación',
+    '910': 'Unidad de Innovación, Sustentabilidad y Resiliencia Climática',
+    '911': 'Dirección General de Desarrollo e Innovación',
+    '912': 'Dirección General de Sustentabilidad y Resiliencia Climática',
+    '920': 'Unidad de Producción, Comercialización y Financiamiento',
+    '921': 'Dirección General de Producción Agrícola',
+    '922': 'Dirección General de Producción Ganadera, Pesquera y Acuícola',
+    '923': 'Dirección General de Precios, Ordenamiento Comercial y Valor Agregado',
+    '924': 'Dirección General de Financiamiento y Gestión de Riesgos',
     'A1I': 'Universidad Autónoma Chapingo',
     'AFU': 'Comité Nacional para el Desarrollo Sustentable de la Caña de Azúcar',
     'B00': 'Servicio Nacional de Sanidad, Inocuidad y Calidad Agroalimentaria',
