@@ -1,32 +1,4 @@
-"""
-Constructor de Tabla Dinámica Presupuestal — MAP / SICOP
-==========================================================
-App Streamlit que integra los reportes crudos de MAP y SICOP, deja armar
-cualquier reporte tipo tabla dinámica (agregar/quitar filas, columnas y
-valores, filtrar por cualquier campo de la base — incluida Unidad
-Responsable, Partida y Programa por nombre) y descarga el resultado en
-Excel con el formato institucional del "Estado del Ejercicio".
 
-Cómo correrla:
-    pip install -r requirements.txt
-    streamlit run pivot_presupuestal_app.py
-
-Qué hace por ti automáticamente al cargar un archivo crudo:
-    - Detecta la codificación (MAP = utf-8, SICOP = latin-1) sola.
-    - Construye la Partida completa en SICOP (Capítulo+Concepto+Genérica+
-      Específica) igual que en tus reportes actuales.
-    - Junta los catálogos de catalogs/unidades.csv, catalogs/partidas.csv
-      y catalogs/programas.csv para mostrar nombres, no solo códigos, en
-      los filtros y en las filas del reporte. Si un código no está en el
-      catálogo, muestra el código tal cual — puedes ir agregando filas a
-      esos CSV para completar la cobertura.
-    - Calcula, para cada familia de importes (Original, Modificado,
-      Comprometido, Ejercido, Reservas, etc.), el total "Anual" y el
-      "Al periodo" (acumulado de enero al mes que elijas), igual que en
-      el Estado del Ejercicio.
-    - Calcula el Importe Disponible como Modificado − Ejercido − Comprometido
-      (fórmula verificada contra tu archivo de ejemplo, cuadra al centavo).
-"""
 
 from __future__ import annotations
 
