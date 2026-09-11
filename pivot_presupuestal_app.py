@@ -1,4 +1,32 @@
+"""
+Constructor de Tabla Dinámica Presupuestal — MAP / SICOP
+==========================================================
+App Streamlit que integra los reportes crudos de MAP y SICOP, deja armar
+cualquier reporte tipo tabla dinámica (agregar/quitar filas, columnas y
+valores, filtrar por cualquier campo de la base — incluida Unidad
+Responsable, Partida y Programa por nombre) y descarga el resultado en
+Excel con el formato institucional del "Estado del Ejercicio".
 
+Cómo correrla:
+    pip install -r requirements.txt
+    streamlit run pivot_presupuestal_app.py
+
+Qué hace por ti automáticamente al cargar un archivo crudo:
+    - Detecta la codificación (MAP = utf-8, SICOP = latin-1) sola.
+    - Construye la Partida completa en SICOP (Capítulo+Concepto+Genérica+
+      Específica) igual que en tus reportes actuales.
+    - Junta los catálogos de catalogs/unidades.csv, catalogs/partidas.csv
+      y catalogs/programas.csv para mostrar nombres, no solo códigos, en
+      los filtros y en las filas del reporte. Si un código no está en el
+      catálogo, muestra el código tal cual — puedes ir agregando filas a
+      esos CSV para completar la cobertura.
+    - Calcula, para cada familia de importes (Original, Modificado,
+      Comprometido, Ejercido, Reservas, etc.), el total "Anual" y el
+      "Al periodo" (acumulado de enero al mes que elijas), igual que en
+      el Estado del Ejercicio.
+    - Calcula el Importe Disponible como Modificado − Ejercido − Comprometido
+      (fórmula verificada contra tu archivo de ejemplo, cuadra al centavo).
+"""
 
 from __future__ import annotations
 
@@ -1222,9 +1250,9 @@ def main():
     )
 
     with st.sidebar:
-        st.header("Fuente de datos")
+        st.header("1. Fuente de datos")
         fuente = st.radio("¿Qué vas a cargar?", ["MAP", "SICOP"], horizontal=True)
-        archivo = st.file_uploader(f"Archivo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
+        archivo = st.file_uploader(f"Archivo crudo de {fuente} (.csv o .xlsx)", type=["csv", "xlsx", "xls"])
 
     hoy = date.today()
     mes_corte_idx = min(hoy.month - 1, 11)
@@ -1264,13 +1292,13 @@ def main():
 
     st.subheader("Unidades a incluir en el cuadro")
     todas_las_unidades = st.checkbox(
-        "Todas las unidades",
+        "Todas las unidades (incluye todas las OREF, 512, 513 y 120-811)",
         value=True,
     )
     unidades_seleccionadas = codigos_disponibles
     if not todas_las_unidades:
         unidades_seleccionadas = st.multiselect(
-            "Elige una o varias unidades",
+            "Elige una o varias unidades (por ejemplo solo 512, solo 513, o 120 + 811 juntas)",
             options=codigos_disponibles,
             default=[],
             format_func=lambda c: etiqueta_con_nombre(c, cat_ur_nombres),
