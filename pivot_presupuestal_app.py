@@ -31,9 +31,7 @@ NOMBRES_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
                "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 
 # ---------------------------------------------------------------------------
-# Catálogos embebidos (código -> nombre), tomados de config.py (nrbeca/nuevo).
-# Van directamente en el código para no depender de una carpeta catalogs/
-# aparte (que además el .gitignore del repo excluye por ser *.csv).
+# Catálogos embebidos (código -> nombre),
 # ---------------------------------------------------------------------------
 CATALOGO_UNIDADES = {
     '100': 'Secretaría',
@@ -807,7 +805,7 @@ CATALOGO_CAPITULOS = {
 
 # ---------------------------------------------------------------------------
 # Definición de familias de importes por fuente
-# (columna total ya existente en el crudo, o None si hay que sumarla)
+# (columna total ya existente en el original, o None si hay que sumarla)
 # ---------------------------------------------------------------------------
 def _cols_sicop(prefijo_2letras: list[str]) -> list[str]:
     return prefijo_2letras
@@ -852,8 +850,7 @@ FUENTES = {
     "SICOP": "Sistema de Contabilidad y Presupuesto (SICOP)",
 }
 
-# Normalización de Unidad Responsable — tomada tal cual de MAPEO_UR_2026_BASE y
-# FUSION_URS_2026 en nrbeca/nuevo/config.py, para que claves legadas o alternas
+# Normalización de Unidad Responsable — para que claves legadas o alternas
 # se agrupen bajo el código vigente antes de buscar el nombre.
 MAPEO_UR_BASE = {
     "G00": "811", "108": "810", "113": "250", "121": "260", "122": "261", "123": "262",
@@ -1027,8 +1024,7 @@ def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: 
 
         columnas_valor += [col_anual, col_periodo]
 
-    # Disponible = Modificado - Ejercido - Comprometido (verificado contra el
-    # archivo de ejemplo: cuadra al centavo con las columnas "Importe Disponible").
+    # Disponible = Modificado - Ejercido - Comprometido 
     nombre_mod = NOMBRES_FAMILIA.get(claves["modificado"])
     nombre_eje = NOMBRES_FAMILIA.get(claves["ejercido"])
     nombre_com = NOMBRES_FAMILIA.get(claves["comprometido"]) if claves["comprometido"] else None
@@ -1043,9 +1039,7 @@ def agregar_periodos_y_disponible(df: pd.DataFrame, fuente: str, mes_corte_idx: 
         columnas_valor += ["Disponible (Anual)", f"Disponible (Al {mes_label})"]
 
     # "Ejercido real" (solo SICOP) = Ejercido + Devengado + Ejercido en trámite,
-    # tal como lo define tu Dashboard de Presupuesto (EJERCIDO_REAL en
-    # sicop_processor.py). Se agrega aparte, sin tocar "Ejercido", porque el
-    # formato estándar de Estado del Ejercicio OREF usa Ejercido solo.
+    # sin tocar "Ejercido", porque el formato estándar de Estado del Ejercicio OREF usa Ejercido solo.
     if fuente == "SICOP" and all(f"{n} (Anual)" in df.columns for n in ["Ejercido", "Devengado", "Ejercido en trámite"]):
         df["Ejercido real (Anual)"] = df["Ejercido (Anual)"] + df["Devengado (Anual)"] + df["Ejercido en trámite (Anual)"]
         df[f"Ejercido real (Al {mes_label})"] = (df["Ejercido (Anual)"] + df[f"Devengado (Al {mes_label})"]
@@ -1241,10 +1235,7 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitul
     fila_grupo = 8
     fila_encabezado = 9
 
-    # Toda la fila 8 va en verde (igual que tu plantilla), no solo las
-    # celdas que dicen "Anual"/"Al periodo" — incluye las columnas de
-    # filas (Unidad Responsable, Partida, etc.) y cualquier columna suelta
-    # como "Importe Ejercido" que no pertenece a ningún grupo.
+
     for j in range(1, n_cols + 1):
         celda = ws.cell(row=fila_grupo, column=j)
         celda.fill = PatternFill("solid", fgColor=VERDE)
@@ -1307,8 +1298,7 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitul
                 # La fila de Total general siempre usa SUBTOTAL sobre todo
                 # el rango de datos — SUBTOTAL ignora automáticamente las
                 # filas de Subtotal que haya en medio, así que no hay doble
-                # conteo — igual en Disponible que en cualquier otra columna,
-                # tal como en la plantilla oficial.
+                # conteo — igual en Disponible que en cualquier otra columna
                 col_letra = get_column_letter(j)
                 celda.value = f"=SUBTOTAL(9,{col_letra}{first_data_row}:{col_letra}{last_row_num})"
             elif es_subtotal and es_columna_valor and bloque_inicio is not None and r - 1 >= bloque_inicio:
@@ -1408,12 +1398,7 @@ def main():
 
     # -----------------------------------------------------------------
     # Unidades a incluir en el cuadro. Por default salen TODAS las
-    # unidades presentes en el archivo cargado (esto ya cubre todas las
-    # OREF, 512, 513 y 120-811, porque son códigos de unidad como
-    # cualquier otro). Si se desactiva "Todas las unidades", se puede
-    # elegir cualquier combinación puntual (una sola UR, o varias juntas
-    # como 512 + 513, o 120 + 811).
-    # -----------------------------------------------------------------
+    # unidades presentes en el archivo cargado 
     cat_ur_nombres = cargar_catalogo("unidades.csv", "codigo_ur", "nombre_ur")
     codigos_disponibles = (
         sorted(df["Unidad Responsable"].dropna().astype(str).unique(), key=lambda c: (len(c), c))
