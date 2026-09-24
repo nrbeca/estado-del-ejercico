@@ -18,7 +18,7 @@ from openpyxl.utils import get_column_letter
 BURDEOS = "621333"     # encabezados de columnas
 VERDE = "1E5B4F"       # encabezados de grupo ("Anual" / "Al periodo")
 GRIS_TOTAL = "D9D9D9"  # fila de Total general
-GRIS_SUBTOTAL = "EDEDED"  # fila de Subtotal por unidad
+GRIS_SUBTOTAL = "1E5B4F"   # fila de Subtotal por unidad
 FORMATO_MONEDA = '_-"$"* #,##0.00_-;\\-"$"* #,##0.00_-;_-"$"* "-"??_-;_-@_-'
 
 THIN_GRIS = Side(style="thin", color="808080")
@@ -1340,7 +1340,7 @@ def exportar_excel_oref(pivote: pd.DataFrame, fuente: str, titulo: str, subtitul
                 celda.font = Font(name="Arial", size=11, bold=True)
                 celda.fill = PatternFill("solid", fgColor=GRIS_TOTAL)
             elif es_subtotal:
-                celda.font = Font(name="Arial", size=11, bold=True)
+                celda.font = Font(name="Arial", size=11, bold=True, color="FFFFFF")
                 celda.fill = PatternFill("solid", fgColor=GRIS_SUBTOTAL)
             else:
                 celda.font = Font(name="Calibri", size=11)
